@@ -1,16 +1,14 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from LlamaModel import *
+from BaseModel import *
+import torch
 
 model_id = "meta-llama/Llama-3.1-8B-Instruct"  # Example for LLaMA 3.1 8B model
 
-def format_llama3(user_input):
-    return f"<|start_header_id|>user<|end_header_id|>\n{user_input.strip()}\n<|start_header_id|>assistant<|end_header_id|>\n"
+llama = LlamaModel(model_id)
+device = "cuda:1" if torch.cuda.is_available() else "cpu"
+_ = llama.load(device)
 
-tokenizer = AutoTokenizer.from_pretrained(model_id)
-model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype="auto", device_map="auto")
-tokenizer.pad_token = tokenizer.eos_token
-
-# Create chat pipeline
-chat = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=300)
 
 # Chat loop
 while True:
@@ -18,7 +16,12 @@ while True:
     if user_input.lower() in ["exit", "quit"]:
         break
 
-    prompt = format_llama3(user_input)
-    response = chat(prompt, do_sample=True, top_p=0.9, temperature=0.7)[0]['generated_text']
+    prompt = llama.format_prompt(user_input)
+    tokenized_prompt = llama.tokenizer(prompt, return_tensors='pt').to(llama.device)
     
-    print(f"LLaMA: {response.replace(prompt, '').strip()}")
+    tokenized_response = llama.model.generate(**tokenized_prompt, max_new_tokens=300, top_p=0.95, do_sample=True)
+    full_response = llama.tokenizer.decode(tokenized_response[0], skip_special_tokens = True)
+    response = llama.extract_response(full_response)
+    llama.update_chat_history(user_input, response)
+    print("Llama:", response)
+
