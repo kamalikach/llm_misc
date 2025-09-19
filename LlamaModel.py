@@ -25,19 +25,10 @@ class LlamaModel(BaseModel):
         self.chat_history.append({"role": "user", "content": user_input})
         self.chat_history.append({"role": "assistant", "content": response})
 
-    def extract_response(self, full_response):
-        # Lowercase to match role labels, can adjust based on your template
-        assistant_tag = "assistant"
-        # Find the last occurrence of 'assistant:'
-        idx = full_response.lower().rfind(assistant_tag)
-        if idx == -1:
-            # fallback: just return the full text
+    def extract_response(self, full_response: str) -> str:
+        """Extract only the assistant's reply from the raw text."""
+        if "assistant" in full_response:
+            return full_response.split("assistant")[-1].strip()
+        else:
             return full_response.strip()
-        # Extract everything after 'assistant:'
-        reply = full_response[idx + len(assistant_tag):].strip()
-        # Optionally stop at next role mention if model continues beyond
-        # For example, stop if 'user:' appears after reply
-        next_user_idx = reply.lower().find("user:")
-        if next_user_idx != -1:
-            reply = reply[:next_user_idx].strip()
-        return reply
+
