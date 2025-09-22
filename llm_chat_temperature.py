@@ -6,8 +6,7 @@ import torch
 
 model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
 llama = LlamaModel(model_id)
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
-_ = llama.load(device)
+_ = llama.load()
 
 
 # Chat loop
@@ -24,8 +23,7 @@ def main():
             break
 
         prompt = llama.format_prompt(user_input)
-        tokenized_prompt = llama.tokenizer(prompt, return_tensors='pt').to(llama.device)
-    
+        tokenized_prompt = llama.tokenizer(prompt, return_tensors='pt').to(llama.model.device) 
         tokenized_response = llama.model.generate(**tokenized_prompt, max_new_tokens=300, temperature=args.temperature, do_sample=True, pad_token_id=llama.tokenizer.eos_token_id)
         full_response = llama.tokenizer.decode(tokenized_response[0], skip_special_tokens = True)
         response = llama.extract_response(full_response)

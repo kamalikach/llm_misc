@@ -12,3 +12,12 @@ class BaseModel(ABC):
     def format_prompt(self, user_input):
         pass
 
+    @abstractmethod
+    def update_chat_history(self, user_input, response):
+        pass
+
+    @abstractmethod
+    def extract_response(self, full_response):
+        pass
+
+

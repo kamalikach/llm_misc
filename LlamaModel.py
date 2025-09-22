@@ -1,16 +1,16 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from BaseModel import BaseModel
+import torch
 
 class LlamaModel(BaseModel):
-    def load(self, device):
+    def load(self):
         tokenizer = AutoTokenizer.from_pretrained(self.model_id, use_fast=True)
         model = AutoModelForCausalLM.from_pretrained(
             self.model_id,
-            torch_dtype="auto",
+            dtype=torch.bfloat16,
             device_map="auto"
         )
         self.model = model
-        self.device = device
         self.tokenizer = tokenizer
         self.chat_history = []
         self.model.config.pad_token_id = self.model.config.eos_token_id
