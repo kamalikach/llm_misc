@@ -8,7 +8,8 @@ class LlamaModel(BaseModel):
         model = AutoModelForCausalLM.from_pretrained(
             self.model_id,
             dtype=torch.bfloat16,
-            device_map="auto"
+            device_map="auto",
+            attn_implementation="eager"
         )
         self.model = model
         self.tokenizer = tokenizer
