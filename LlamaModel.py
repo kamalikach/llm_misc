@@ -3,13 +3,13 @@ from BaseModel import BaseModel
 import torch
 
 class LlamaModel(BaseModel):
-    def load(self):
+    def load(self, attn_implementation="sdpa"):
         tokenizer = AutoTokenizer.from_pretrained(self.model_id, use_fast=True)
         model = AutoModelForCausalLM.from_pretrained(
             self.model_id,
             dtype=torch.bfloat16,
             device_map="auto",
-            attn_implementation="eager"
+            attn_implementation=attn_implementation
         )
         self.model = model
         self.tokenizer = tokenizer
